@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1029346534617",
+    "project_id": "campusmart-5e9c0",
+    "storage_bucket": "campusmart-5e9c0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029346534617:android:f59651065da76bc8314ac8",
+        "android_client_info": {
+          "package_name": "com.sirmaur.campusmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGcYzvrXbr2t3hplyngPZpEWn7LruCA7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
