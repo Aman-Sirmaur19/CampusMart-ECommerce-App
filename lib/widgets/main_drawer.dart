@@ -40,16 +40,22 @@ class _MainDrawerState extends State<MainDrawer> {
       children: <Widget>[
         Container(
           height: 120,
-          padding: const EdgeInsets.only(top: 20, left: 20),
+          padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
           alignment: Alignment.centerLeft,
           color: Theme.of(context).colorScheme.primary,
-          child: const Text(
-            'Dashboard',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 25,
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 25,
+                  color: Colors.white,
+                ),
+              ),
+              Image.asset('assets/images/icon.png', height: mq.width * .15),
+            ],
           ),
         ),
         const SizedBox(height: 10),

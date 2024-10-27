@@ -75,8 +75,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    mq = MediaQuery.of(context).size;
-
     return Scaffold(
       body: InkWell(
         onTap: _checkAuthentication,
@@ -84,7 +82,9 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              Image.asset('assets/images/icon.png', width: mq.width * .6),
               const CustomTitle(),
+              const SizedBox(height: 250),
               RichText(
                 textAlign: TextAlign.center,
                 text: const TextSpan(

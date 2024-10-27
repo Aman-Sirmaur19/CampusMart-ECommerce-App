@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../main.dart';
 import '../../../helper/dialogs.dart';
 import '../../helper/api.dart';
+import '../../widgets/custom_title.dart';
 import '../home_screen.dart';
 
 enum AuthMode { signUp, logIn, reset }
@@ -202,19 +203,25 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         body: Padding(
           padding: EdgeInsets.only(
-              left: mq.width * .1, right: mq.width * .1, top: mq.height * .15),
+              left: mq.width * .1, right: mq.width * .1, top: mq.height * .1),
           child: Form(
             key: formKey,
             child: ListView(
               children: [
-                const Text(
-                  'CampusMart',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image.asset('assets/images/icon.png',
+                        height: mq.width * .2),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: CustomTitle(),
+                    ),
+                  ],
                 ),
+                SizedBox(height: _authMode == AuthMode.signUp ? 20 : 30),
                 Text(
                   _authMode == AuthMode.logIn
                       ? 'Login Here'
