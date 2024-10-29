@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../models/main_user.dart';
+import '../models/product.dart';
 
 class APIs {
   // for authentication
@@ -70,5 +71,46 @@ class APIs {
       'college': me.college,
       'email': me.email,
     });
+  }
+
+  // for uploading product
+  static Future<void> uploadProduct(Product item) async {
+    // product to upload
+    final Product product = Product(
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      price: item.price,
+      quantity: item.quantity,
+    );
+
+    final ref = firestore.collection(
+        'colleges/${me.college.trim()}/sellers/${me.email.trim()}/products');
+    await ref.doc(item.id).set(product.toJson());
+  }
+
+  // for deleting product
+  static Future<void> deleteProduct(String id) async {
+    firestore
+        .collection(
+            'colleges/${me.college.trim()}/sellers/${me.email.trim()}/products')
+        .doc(id)
+        .delete();
+  }
+
+  // for fetching all the products of college
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllProducts() {
+    return firestore.collectionGroup('products').snapshots();
+  }
+
+  // for fetching my products
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyProducts() {
+    return firestore
+        .collection('colleges')
+        .doc(me.college)
+        .collection('sellers')
+        .doc(me.email)
+        .collection('products')
+        .snapshots();
   }
 }

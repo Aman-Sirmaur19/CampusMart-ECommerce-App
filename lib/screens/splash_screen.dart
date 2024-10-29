@@ -9,7 +9,7 @@ import '../helper/api.dart';
 import '../helper/dialogs.dart';
 import '../widgets/custom_title.dart';
 import 'auth/login_screen.dart';
-import 'home_screen.dart';
+import 'product/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);

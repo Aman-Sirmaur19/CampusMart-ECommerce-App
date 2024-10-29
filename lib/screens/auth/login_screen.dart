@@ -8,7 +8,7 @@ import '../../../main.dart';
 import '../../../helper/dialogs.dart';
 import '../../helper/api.dart';
 import '../../widgets/custom_title.dart';
-import '../home_screen.dart';
+import '../product/home_screen.dart';
 
 enum AuthMode { signUp, logIn, reset }
 
