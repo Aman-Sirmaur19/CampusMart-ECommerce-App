@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/product.dart';
+import '../payment/payment_screen.dart';
+import 'chat_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -33,13 +35,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ),
       ),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+            context, CupertinoPageRoute(builder: (_) => const ChatScreen())),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.blue,
+        shape: const CircleBorder(),
+        tooltip: 'Chat with seller!',
+        child: const Icon(CupertinoIcons.chat_bubble_2, size: 30),
+      ),
       bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.all(5),
-        color: Colors.black87,
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 7),
+        color: Colors.black54,
         height: 50,
         shape: const CircularNotchedRectangle(),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ElevatedButton.icon(
               onPressed: () {},
@@ -52,7 +65,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => Navigator.push(context,
+                  CupertinoPageRoute(builder: (_) => const PaymentScreen())),
               icon: const Icon(Icons.shopping_basket_rounded),
               label: const Text('Buy now'),
               style: ButtonStyle(
