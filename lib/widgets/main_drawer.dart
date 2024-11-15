@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../helper/dialogs.dart';
 import '../main.dart';
 import '../screens/cart/cart_screen.dart';
+import '../screens/my shop/chat_users.dart';
 import '../screens/my shop/my_products.dart';
 import '../screens/profile_screen.dart';
 
@@ -18,10 +19,10 @@ class MainDrawer extends StatefulWidget {
 class _MainDrawerState extends State<MainDrawer> {
   Widget buildListTile(String title, IconData icon, VoidCallback tapHandler) {
     return ListTile(
-      leading: Icon(icon, size: 26),
+      leading: Icon(icon, size: 20),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       ),
       onTap: tapHandler,
     );
@@ -72,10 +73,16 @@ class _MainDrawerState extends State<MainDrawer> {
               context, CupertinoPageRoute(builder: (_) => const CartScreen())),
         ),
         buildListTile(
-          'My Shop',
+          'My Store',
           Icons.store_outlined,
           () => Navigator.push(
               context, CupertinoPageRoute(builder: (_) => const MyProducts())),
+        ),
+        buildListTile(
+          'Chat with customers',
+          CupertinoIcons.chat_bubble_2,
+          () => Navigator.push(
+              context, CupertinoPageRoute(builder: (_) => const ChatUsers())),
         ),
         buildListTile(
           'More Apps!',

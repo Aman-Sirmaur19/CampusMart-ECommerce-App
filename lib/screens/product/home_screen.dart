@@ -66,30 +66,112 @@ class _HomeScreenState extends State<HomeScreen> {
             case ConnectionState.active:
             case ConnectionState.done:
               final data = snapshot.data?.docs;
-              products =
-                  data?.map((e) => Product.fromJson(e.data())).toList() ?? [];
-
+              products.clear();
+              if (data != null) {
+                for (var doc in data) {
+                  final productData = doc.data(); // Access the document data
+                  if (productData['seller_id'] != APIs.user.uid) {
+                    products.add(Product.fromJson(productData));
+                  }
+                }
+              }
               if (products.isNotEmpty) {
-                return GridView.builder(
+                return ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: .9,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                  ),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    final product = products[index];
-                    return InkWell(
-                        onTap: () => Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                                builder: (_) =>
-                                    ProductDetailScreen(product: product))),
-                        child: ProductCard(product: product));
-                  },
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Shops',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 20,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'See all',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w500,
+                              // fontSize: 20,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 150,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 1,
+                          childAspectRatio: 1,
+                        ),
+                        itemCount: 5,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                              onTap: () {
+                                // => Navigator.push(
+                                //     context,
+                                //     CupertinoPageRoute(
+                                //         builder: (_) =>
+                                //             ProductDetailScreen(product: product)))
+                              },
+                              child: Card(
+                                elevation: 1,
+                                child: ListTile(
+                                  title:
+                                      const Icon(Icons.store_rounded, size: 70),
+                                  subtitle: Text(
+                                    'Vendor',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ));
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Products',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                      ),
+                    ),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const ScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: .9,
+                        crossAxisSpacing: 8.0,
+                        mainAxisSpacing: 8.0,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return InkWell(
+                            onTap: () => Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                    builder: (_) =>
+                                        ProductDetailScreen(product: product))),
+                            child: ProductCard(product: product));
+                      },
+                    ),
+                  ],
                 );
               } else {
                 return Center(

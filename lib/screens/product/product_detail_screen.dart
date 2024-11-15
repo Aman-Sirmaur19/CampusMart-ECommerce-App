@@ -39,17 +39,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           FloatingActionButtonLocation.miniCenterDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
-            context, CupertinoPageRoute(builder: (_) => const ChatScreen())),
+            context,
+            CupertinoPageRoute(
+                builder: (_) => ChatScreen(id: widget.product.seller_id))),
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
         shape: const CircleBorder(),
-        tooltip: 'Chat with seller!',
+        tooltip: 'Chat with seller',
         child: const Icon(CupertinoIcons.chat_bubble_2, size: 30),
       ),
       bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 7),
-        color: Colors.black54,
-        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 55,
         shape: const CircularNotchedRectangle(),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

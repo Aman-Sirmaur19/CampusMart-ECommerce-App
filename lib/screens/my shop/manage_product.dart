@@ -185,13 +185,19 @@ class _ManageProductState extends State<ManageProduct> {
         _descriptionController.text.trim().isNotEmpty) {
       Product item = Product(
           id: id,
+          seller_id: APIs.user.uid,
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           price: int.parse(_priceController.text.trim()),
           quantity: int.parse(_quantityController.text.trim()));
       try {
         APIs.uploadProduct(item).then((value) {
-          Dialogs.showSnackBar(context, 'Product added successfully!');
+          isLoading = false;
+          Dialogs.showSnackBar(
+              context,
+              widget.product == null
+                  ? 'Product added successfully!'
+                  : 'Product updated successfully!');
           Navigator.pop(context);
         });
       } catch (error) {
@@ -199,12 +205,10 @@ class _ManageProductState extends State<ManageProduct> {
           isLoading = false;
         });
         Dialogs.showErrorSnackBar(context, error.toString());
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
       }
     } else {
+      Dialogs.showErrorSnackBar(context, 'Fill all the fields!');
+      isLoading = false;
       return;
     }
   }
