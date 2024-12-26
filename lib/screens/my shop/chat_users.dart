@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../helper/api.dart';
-import '../product/chat_screen.dart';
+import '../chat_screen.dart';
 
 class ChatUsers extends StatelessWidget {
   const ChatUsers({super.key});

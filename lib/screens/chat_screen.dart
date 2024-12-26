@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../helper/api.dart';
-import '../../main.dart';
-import '../../models/main_user.dart';
-import '../../models/message.dart';
-import '../../widgets/message_card.dart';
+import '../helper/api.dart';
+import '../main.dart';
+import '../models/main_user.dart';
+import '../models/message.dart';
+import '../widgets/message_card.dart';
 
 class ChatScreen extends StatefulWidget {
   final String id;
@@ -67,11 +67,10 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color.fromRGBO(255, 254, 229, 1),
         body: sellerOrBuyer == null
             ? const Center(child: CircularProgressIndicator())
             : SizedBox(
-                height: mq.height * .85,
+                height: mq.height,
                 child: Column(
                   children: [
                     Expanded(
@@ -129,7 +128,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _chatInput() {
     return Padding(
       padding: EdgeInsets.symmetric(
-          vertical: mq.height * .01, horizontal: mq.width * .02),
+          vertical: mq.height * .005, horizontal: mq.width * .02),
       child: Row(
         children: [
           Expanded(
@@ -176,7 +175,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           MaterialButton(
             onPressed: () {
-              if (_textController.text.isNotEmpty) {
+              if (_textController.text.trim().isNotEmpty) {
                 APIs.sendMessage(sellerOrBuyer!, _textController.text);
                 _textController.text = '';
               }
