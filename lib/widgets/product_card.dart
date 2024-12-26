@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../helper/constants.dart';
 import '../models/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final ItemType itemType;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({super.key, required this.product, required this.itemType});
 
   @override
   Widget build(BuildContext context) {
@@ -19,18 +21,26 @@ class ProductCard extends StatelessWidget {
           children: [
             const Center(child: Icon(Icons.shopping_bag_rounded, size: 50)),
             const SizedBox(height: 20),
-            Text(product.title,
-                maxLines: 2,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 19,
-                )),
-            Text('₹${product.price}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                  fontSize: 19,
-                )),
+            Text(
+              product.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 19,
+              ),
+            ),
+            Text(
+              itemType == ItemType.lost
+                  ? product.description
+                  : '₹${product.price}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: itemType == ItemType.lost ? 15 : 19,
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

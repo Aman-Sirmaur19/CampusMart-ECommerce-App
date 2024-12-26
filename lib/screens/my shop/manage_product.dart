@@ -1,15 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../helper/api.dart';
-import '../../helper/dialogs.dart';
 import '../../main.dart';
+import '../../helper/api.dart';
+import '../../helper/constants.dart';
+import '../../helper/dialogs.dart';
 import '../../models/product.dart';
 
 class ManageProduct extends StatefulWidget {
   final Product? product;
+  final ItemType itemType;
 
-  const ManageProduct({super.key, this.product});
+  const ManageProduct({super.key, this.product, required this.itemType});
 
   @override
   State<ManageProduct> createState() => _ManageProductState();
@@ -22,6 +24,7 @@ class _ManageProductState extends State<ManageProduct> {
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
   final _quantityController = TextEditingController();
+  final _daysController = TextEditingController();
   final _descriptionController = TextEditingController();
 
   @override
@@ -29,9 +32,10 @@ class _ManageProductState extends State<ManageProduct> {
     super.initState();
     if (widget.product != null) {
       _titleController.text = widget.product!.title;
-      _descriptionController.text = widget.product!.description;
       _priceController.text = widget.product!.price.toString();
       _quantityController.text = widget.product!.quantity.toString();
+      _daysController.text = widget.product!.days.toString();
+      _descriptionController.text = widget.product!.description;
     }
   }
 
@@ -40,6 +44,7 @@ class _ManageProductState extends State<ManageProduct> {
     _titleController.dispose();
     _priceController.dispose();
     _quantityController.dispose();
+    _daysController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -55,9 +60,13 @@ class _ManageProductState extends State<ManageProduct> {
             tooltip: 'Back',
             icon: const Icon(CupertinoIcons.back),
           ),
-          title: const Text(
-            'Add Product',
-            style: TextStyle(
+          title: Text(
+            widget.itemType == ItemType.sale
+                ? 'Add Product'
+                : widget.itemType == ItemType.rental
+                    ? 'Add Rental'
+                    : 'Add Lost Item',
+            style: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
             ),
@@ -75,18 +84,28 @@ class _ManageProductState extends State<ManageProduct> {
                   controller: _titleController,
                   isNumber: false,
                 ),
-                const SizedBox(height: 12),
-                customTextFormField(
-                  name: 'Price',
-                  controller: _priceController,
-                  isNumber: true,
-                ),
+                if (widget.itemType != ItemType.lost)
+                  const SizedBox(height: 12),
+                if (widget.itemType != ItemType.lost)
+                  customTextFormField(
+                    name: 'Price',
+                    controller: _priceController,
+                    isNumber: true,
+                  ),
                 const SizedBox(height: 12),
                 customTextFormField(
                   name: 'Quantity',
                   controller: _quantityController,
                   isNumber: true,
                 ),
+                if (widget.itemType == ItemType.rental)
+                  const SizedBox(height: 12),
+                if (widget.itemType == ItemType.rental)
+                  customTextFormField(
+                    name: 'No.of days for rent',
+                    controller: _daysController,
+                    isNumber: true,
+                  ),
                 const SizedBox(height: 12),
                 customTextFormField(
                   name: 'Description',
@@ -180,18 +199,29 @@ class _ManageProductState extends State<ManageProduct> {
 
   void uploadOrUpdateItem({required String id}) {
     if (_titleController.text.trim().isNotEmpty &&
-        _priceController.text.trim().isNotEmpty &&
         _quantityController.text.trim().isNotEmpty &&
-        _descriptionController.text.trim().isNotEmpty) {
+        _descriptionController.text.trim().isNotEmpty &&
+        (widget.itemType == ItemType.lost ||
+            (widget.itemType == ItemType.sale &&
+                _priceController.text.trim().isNotEmpty) ||
+            (widget.itemType == ItemType.rental &&
+                _priceController.text.trim().isNotEmpty &&
+                _daysController.text.trim().isNotEmpty))) {
       Product item = Product(
-          id: id,
-          seller_id: APIs.user.uid,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
-          price: int.parse(_priceController.text.trim()),
-          quantity: int.parse(_quantityController.text.trim()));
+        id: id,
+        seller_id: APIs.user.uid,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        price: widget.itemType != ItemType.lost
+            ? int.parse(_priceController.text.trim())
+            : 0,
+        quantity: int.parse(_quantityController.text.trim()),
+        days: widget.itemType == ItemType.rental
+            ? int.parse(_daysController.text.trim())
+            : 0,
+      );
       try {
-        APIs.uploadProduct(item).then((value) {
+        APIs.uploadProduct(item: item, itemType: widget.itemType).then((value) {
           isLoading = false;
           Dialogs.showSnackBar(
               context,
@@ -215,7 +245,7 @@ class _ManageProductState extends State<ManageProduct> {
 
   void deleteItem({required String id}) {
     try {
-      APIs.deleteProduct(id).then((value) {
+      APIs.deleteProduct(id: id, itemType: widget.itemType).then((value) {
         Dialogs.showSnackBar(context, 'Product deleted successfully!');
         Navigator.pop(context);
         Navigator.pop(context);

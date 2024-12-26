@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/main_user.dart';
 import '../models/message.dart';
 import '../models/product.dart';
+import 'constants.dart';
 
 class APIs {
   // for authentication
@@ -38,8 +39,6 @@ class APIs {
       if (user.exists) {
         me = MainUser.fromJson(user.data()!);
         log('My Data: ${user.data()}');
-      } else {
-        await createUser('').then((value) => getSelfInfo());
       }
     });
   }
@@ -55,20 +54,7 @@ class APIs {
   }
 
   // for creating a new user
-  static Future<void> createUser(String college) async {
-    final time = DateTime.now().millisecondsSinceEpoch.toString();
-
-    final mainUser = MainUser(
-      id: user.uid,
-      pushToken: '',
-      name: 'Unknown',
-      college: college,
-      email: user.email!,
-      createdAt: time,
-      customers: [],
-      isVerified: false,
-    );
-
+  static Future<void> createUser(MainUser mainUser) async {
     return await firestore
         .collection('users')
         .doc(user.uid)
@@ -90,45 +76,168 @@ class APIs {
   }
 
   // for uploading product
-  static Future<void> uploadProduct(Product item) async {
-    // product to upload
-    final Product product = Product(
-      id: item.id,
-      seller_id: item.seller_id,
-      title: item.title,
-      description: item.description,
-      price: item.price,
-      quantity: item.quantity,
-    );
+  static Future<void> uploadProduct(
+      {required Product item, required ItemType itemType}) async {
+    try {
+      // Product to upload
+      final Product product = Product(
+        id: item.id,
+        seller_id: item.seller_id,
+        title: item.title,
+        description: item.description,
+        price: item.price,
+        quantity: item.quantity,
+        days: item.days,
+      );
+      String folder = itemType == ItemType.sale
+          ? 'products'
+          : itemType == ItemType.rental
+              ? 'rentals'
+              : 'lost';
 
-    final ref = firestore.collection(
-        'colleges/${me.college.trim()}/sellers/${me.email.trim()}/products');
-    await ref.doc(item.id).set(product.toJson());
+      // Reference to the Firestore document
+      final ref = firestore.collection(
+          'colleges/${me.college.trim()}/sellers/${me.email.trim()}/$folder');
+
+      // Upload the product
+      await ref.doc(item.id).set(product.toJson());
+
+      if (itemType != ItemType.rental) {
+        await ref.doc(item.id).update({'days': FieldValue.delete()});
+      }
+      if (itemType == ItemType.lost) {
+        await ref.doc(item.id).update({'price': FieldValue.delete()});
+      }
+    } catch (e) {
+      print('Error uploading product: $e');
+      rethrow;
+    }
   }
 
   // for deleting product
-  static Future<void> deleteProduct(String id) async {
+  static Future<void> deleteProduct(
+      {required String id, required ItemType itemType}) async {
+    String folder = itemType == ItemType.sale
+        ? 'products'
+        : itemType == ItemType.rental
+            ? 'rentals'
+            : 'lost';
     firestore
         .collection(
-            'colleges/${me.college.trim()}/sellers/${me.email.trim()}/products')
+            'colleges/${me.college.trim()}/sellers/${me.email.trim()}/$folder')
         .doc(id)
         .delete();
   }
 
   // for fetching all the products of college
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllProducts() {
-    return firestore.collectionGroup('products').snapshots();
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllProducts(
+      {required ItemType itemType}) {
+    return firestore
+        .collectionGroup(itemType == ItemType.sale
+            ? 'products'
+            : itemType == ItemType.rental
+                ? 'rentals'
+                : 'lost')
+        .snapshots();
   }
 
   // for fetching my products
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyProducts() {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyProducts(
+      {required ItemType itemType}) {
     return firestore
         .collection('colleges')
         .doc(me.college)
         .collection('sellers')
         .doc(me.email)
-        .collection('products')
+        .collection(itemType == ItemType.sale
+            ? 'products'
+            : itemType == ItemType.rental
+                ? 'rentals'
+                : 'lost')
         .snapshots();
+  }
+
+  // for checking if the product is already in the cart or not
+  static Future<bool> isItemInCart(String key, String value) async {
+    try {
+      // Get the existing cart from Firestore
+      final doc = await firestore.collection('users').doc(user.uid).get();
+      final data = doc.data();
+
+      if (data != null && data['cart'] is Map) {
+        // Parse the cart to a Map<String, List<String>>
+        Map<String, List<String>> cart =
+            (data['cart'] as Map).map<String, List<String>>(
+          (key, value) => MapEntry(
+            key as String,
+            (value as List).map((item) => item.toString()).toList(),
+          ),
+        );
+
+        // Check if the key exists and the value is in the list
+        if (cart.containsKey(key) && cart[key]!.contains(value)) {
+          return true; // Item is in the cart
+        }
+      }
+      return false; // Item is not in the cart
+    } catch (e) {
+      print('Error checking item in cart: $e');
+      return false; // Return false in case of an error
+    }
+  }
+
+  // for adding and removing product from cart
+  static Future<void> toggleItemInCart(String key, String value) async {
+    try {
+      // Check if the item is already in the cart
+      bool isInCart = await isItemInCart(key, value);
+
+      // Get the existing cart from Firestore
+      final doc = await firestore.collection('users').doc(user.uid).get();
+      final data = doc.data();
+
+      if (data != null && data['cart'] is Map) {
+        // Parse the cart to a Map<String, List<String>>
+        Map<String, List<String>> cart =
+            (data['cart'] as Map).map<String, List<String>>(
+          (key, value) => MapEntry(
+            key as String,
+            (value as List).map((item) => item.toString()).toList(),
+          ),
+        );
+
+        if (isInCart) {
+          // Remove the value if it exists
+          cart[key]!.remove(value);
+          if (cart[key]!.isEmpty) {
+            cart.remove(key); // Remove the key if the list becomes empty
+          }
+        } else {
+          // Add the value if it doesn't exist
+          if (!cart.containsKey(key)) {
+            cart[key] = [];
+          }
+          cart[key]!.add(value);
+        }
+
+        // Update the cart in Firestore
+        await firestore
+            .collection('users')
+            .doc(user.uid)
+            .update({'cart': cart});
+        print('Cart updated successfully');
+      } else if (!isInCart) {
+        // If no cart exists, initialize and add the item
+        await firestore.collection('users').doc(user.uid).update({
+          'cart': {
+            key: [value]
+          }
+        });
+        print('Cart initialized and item added');
+      }
+    } catch (e) {
+      print('Error toggling item in cart: $e');
+    }
   }
 
   /// ******** ChatScreen related API *********

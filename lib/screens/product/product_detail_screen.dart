@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../helper/api.dart';
+import '../../helper/dialogs.dart';
 import '../../models/product.dart';
-import '../payment/payment_screen.dart';
-import 'chat_screen.dart';
+import '../chat_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -16,7 +17,20 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _currentImageIndex = 0;
-  int quantity = 1;
+  int _quantity = 1;
+  bool _isInCart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCart();
+  }
+
+  Future<void> _checkCart() async {
+    _isInCart =
+        await APIs.isItemInCart(widget.product.seller_id, widget.product.id);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,15 +52,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-            context,
-            CupertinoPageRoute(
-                builder: (_) => ChatScreen(id: widget.product.seller_id))),
+        onPressed: () {},
         foregroundColor: Colors.white,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.green,
         shape: const CircleBorder(),
-        tooltip: 'Chat with seller',
-        child: const Icon(CupertinoIcons.chat_bubble_2, size: 30),
+        tooltip: 'Call the seller',
+        child: const Icon(CupertinoIcons.phone, size: 30),
       ),
       bottomNavigationBar: BottomAppBar(
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -56,24 +67,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () => setState(() {
+                APIs.toggleItemInCart(
+                        widget.product.seller_id, widget.product.id)
+                    .then((value) => _checkCart())
+                    .then((value) => Dialogs.showSnackBar(
+                        context,
+                        _isInCart
+                            ? 'Item added to cart!'
+                            : 'Item removed from cart!'));
+              }),
               icon: const Icon(Icons.shopping_cart_rounded),
-              label: const Text('Add to cart'),
+              label: Text(_isInCart ? 'Added ✔️' : 'Add to cart',
+                  textAlign: TextAlign.center),
               style: ButtonStyle(
+                minimumSize: MaterialStateProperty.all(const Size(142, 40)),
                 iconColor: MaterialStateProperty.all(Colors.black),
-                backgroundColor: MaterialStateProperty.all(Colors.lightGreen),
+                backgroundColor: MaterialStateProperty.all(Colors.amber),
                 foregroundColor: MaterialStateProperty.all(Colors.black),
               ),
             ),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(context,
-                  CupertinoPageRoute(builder: (_) => const PaymentScreen())),
-              icon: const Icon(Icons.shopping_basket_rounded),
-              label: const Text('Buy now'),
+              onPressed: () => Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (_) =>
+                          ChatScreen(id: widget.product.seller_id))),
+              icon: const Icon(CupertinoIcons.chat_bubble_2),
+              label: const Text('Chat', textAlign: TextAlign.center),
               style: ButtonStyle(
-                iconColor: MaterialStateProperty.all(Colors.black),
-                backgroundColor: MaterialStateProperty.all(Colors.amber),
-                foregroundColor: MaterialStateProperty.all(Colors.black),
+                minimumSize: MaterialStateProperty.all(const Size(142, 40)),
+                iconColor: MaterialStateProperty.all(Colors.white),
+                backgroundColor: MaterialStateProperty.all(Colors.blue),
+                foregroundColor: MaterialStateProperty.all(Colors.white),
               ),
             ),
           ],
@@ -132,89 +158,145 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'MRP: ',
-                          style: TextStyle(
-                            letterSpacing: 1,
-                            fontSize: 17,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'MRP: ',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  letterSpacing: 1,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 130,
+                                child: Text(
+                                  '₹${widget.product.price}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    letterSpacing: 1,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        Text(
-                          '₹${widget.product.price}',
-                          style: const TextStyle(
-                            letterSpacing: 1,
-                            fontSize: 25,
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                            onPressed: () => setState(() {
-                                  if (quantity > 1) {
-                                    quantity--;
-                                  }
-                                }),
-                            tooltip: 'Remove',
-                            icon: const Icon(Icons.remove_rounded)),
-                        Chip(
-                            padding: const EdgeInsets.all(2),
-                            label: Text('$quantity',
-                                style: const TextStyle(fontSize: 20))),
-                        IconButton(
-                            onPressed: () => setState(() {
-                                  if (quantity < widget.product.quantity) {
-                                    quantity++;
-                                  }
-                                }),
-                            tooltip: 'Add',
-                            icon: const Icon(Icons.add_rounded)),
-                      ],
-                    ),
-                  ],
-                ),
-                const Text(
-                  '(incl. of all taxes.)',
-                  style: TextStyle(fontSize: 10),
+                          const Text(
+                            '(incl. of all taxes.)',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.blueGrey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                              onPressed: () => setState(() {
+                                    if (_quantity > 1) {
+                                      _quantity--;
+                                    }
+                                  }),
+                              tooltip: 'Remove',
+                              icon: const Icon(Icons.remove_rounded)),
+                          Chip(
+                              padding: const EdgeInsets.all(2),
+                              label: Text('$_quantity',
+                                  style: const TextStyle(fontSize: 20))),
+                          IconButton(
+                              onPressed: () => setState(() {
+                                    if (_quantity < widget.product.quantity) {
+                                      _quantity++;
+                                    }
+                                  }),
+                              tooltip: 'Add',
+                              icon: const Icon(Icons.add_rounded)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 18),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Description:',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'Quantity: ',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          widget.product.quantity.toString(),
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                          text: const TextSpan(
+                              text: 'Payment: ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                            TextSpan(
+                              text: 'Cash On Delivery',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          ])),
+                      Text(
+                        'Quantity: ${widget.product.quantity}',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  widget.product.description,
-                  style: const TextStyle(fontSize: 15),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Description:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        widget.product.description,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

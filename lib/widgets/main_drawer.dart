@@ -6,7 +6,7 @@ import '../helper/dialogs.dart';
 import '../main.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/my shop/chat_users.dart';
-import '../screens/my shop/my_products.dart';
+import '../screens/my shop/tab_screen.dart';
 import '../screens/profile_screen.dart';
 
 class MainDrawer extends StatefulWidget {
@@ -76,7 +76,7 @@ class _MainDrawerState extends State<MainDrawer> {
           'My Store',
           Icons.store_outlined,
           () => Navigator.push(
-              context, CupertinoPageRoute(builder: (_) => const MyProducts())),
+              context, CupertinoPageRoute(builder: (_) => const TabScreen())),
         ),
         buildListTile(
           'Chat with customers',

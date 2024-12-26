@@ -4,8 +4,9 @@ class Product {
     required this.seller_id,
     required this.title,
     required this.description,
-    required this.price,
+    this.price = 0,
     required this.quantity,
+    this.days = 0,
   });
 
   late final String id;
@@ -14,6 +15,7 @@ class Product {
   late final String description;
   late final int price;
   late final int quantity;
+  late final int days;
 
   Product.fromJson(Map<String, dynamic> json) {
     id = json['id'].toString();
@@ -22,6 +24,7 @@ class Product {
     description = json['description'].toString();
     price = json['price'];
     quantity = json['quantity'];
+    days = json['days'];
   }
 
   Map<String, dynamic> toJson() {
@@ -32,6 +35,7 @@ class Product {
     data['description'] = description;
     data['price'] = price;
     data['quantity'] = quantity;
+    data['days'] = days;
     return data;
   }
 }
